@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class BuddyController : MonoBehaviour
@@ -11,7 +12,12 @@ public class BuddyController : MonoBehaviour
     
     private float inputX = 0;
     private float facing = 1;   //facing right =1, facing left = -1
-    private bool isGrounded;    
+    private bool isGrounded;
+
+    public Transform groundCheckPos;
+    float groundCheckLength = 0.25f;
+    public LayerMask groundCheckLayerMask;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -44,11 +50,40 @@ public class BuddyController : MonoBehaviour
         {
             spriteRenderer.flipX = true;
         }
-        if( Input.GetButtonDown("Jump"))
+
+        RaycastHit2D hit = Physics2D.Raycast(groundCheckPos.position, Vector2.down, groundCheckLength, groundCheckLayerMask);
+        //return value of true if it hits something
+        if (hit.collider != null)
+        {
+            isGrounded = true;
+        }
+        else
+        {
+            isGrounded = false;
+        }
+
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
             rigidBody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);    //Having a sudden force upward for the impulse 
         }
         //if (Input.GetKeyDown(KeyCode.Space)) { } //The same with above just coded differently
+
+        if (animator)
+        {
+            animator.SetFloat("moveX", Mathf.Abs(rigidBody.linearVelocityX));
+            animator.SetBool("isJumping", !isGrounded);
+        }
+
+
+
+
+
+
+
+
+
+
     }
     private void FixedUpdate()
     {
